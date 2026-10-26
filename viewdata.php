@@ -241,6 +241,7 @@
                             class="baris-mahasiswa"
                             data-nama="<?php echo htmlspecialchars(strtolower($row['Nama_lengkap'])); ?>"
                             data-nilai="<?php echo htmlspecialchars($row['nilai_akhir']); ?>"
+                            data-predikat="<?php echo htmlspecialchars(strtolower($row['predikat'])); ?>"
                           >
                             <td>
                               <?php if (!empty($row['foto'])) { ?>
@@ -303,7 +304,7 @@
                         </tbody>
                       </table>
                       <p id="search-kosong" class="text-center text-body-secondary py-3 m-0 d-none">
-                        Mahasiswa dengan nama tersebut tidak ditemukan
+                        Data mahasiswa yang dicari tidak ditemukan
                       </p>
                     </div>
                     <!-- /.table-responsive -->
@@ -640,15 +641,18 @@
     </script>
     <!--end::Edit Modal Configure-->
 
-    <!--begin::Search Configure-->
+    <!--begin::Search & Filter Predikat Configure-->
     <script>
-      // sembunyikan baris yang namanya tidak mengandung kata kunci pencarian
-      document.getElementById('user-search').addEventListener('input', function () {
-        const keyword = this.value.trim().toLowerCase();
+      // tampilkan hanya baris yang namanya cocok dengan pencarian DAN predikatnya cocok dengan dropdown
+      function filterTabel() {
+        const keyword = document.getElementById('user-search').value.trim().toLowerCase();
+        const predikat = document.getElementById('user-role-filter').value;
         let jumlahTampil = 0;
 
         document.querySelectorAll('.baris-mahasiswa').forEach(function (baris) {
-          const cocok = baris.getAttribute('data-nama').includes(keyword);
+          const cocokNama = baris.getAttribute('data-nama').includes(keyword);
+          const cocokPredikat = predikat === 'all' || baris.getAttribute('data-predikat') === predikat;
+          const cocok = cocokNama && cocokPredikat;
           baris.classList.toggle('d-none', !cocok);
           if (cocok) jumlahTampil++;
         });
@@ -657,9 +661,12 @@
         if (pesanKosong) {
           pesanKosong.classList.toggle('d-none', jumlahTampil > 0);
         }
-      });
+      }
+
+      document.getElementById('user-search').addEventListener('input', filterTabel);
+      document.getElementById('user-role-filter').addEventListener('change', filterTabel);
     </script>
-    <!--end::Search Configure-->
+    <!--end::Search & Filter Predikat Configure-->
 
     <!--begin::Sort Nilai Akhir Configure-->
     <script>
