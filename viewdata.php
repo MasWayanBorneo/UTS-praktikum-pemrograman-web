@@ -214,7 +214,17 @@
                             <th>Foto</th>
                             <th>NIM</th>
                             <th>Nama Lengkap</th>
-                            <th>Nilai Akhir</th>
+                            <th id="th-nilai-akhir" aria-sort="ascending">
+                              <button
+                                type="button"
+                                id="sort-nilai-akhir"
+                                class="btn btn-link p-0 fw-bold text-reset text-decoration-none text-nowrap"
+                                title="Urutkan Nilai Akhir"
+                              >
+                                Nilai Akhir
+                                <i id="sort-nilai-akhir-icon" class="bi bi-sort-numeric-down ms-1" aria-hidden="true"></i>
+                              </button>
+                            </th>
                             <th>Nilai Huruf</th>
                             <th>Predikat</th>
                             <th>Tanggal Dibuat</th>
@@ -223,12 +233,15 @@
                           </tr>
                         </thead>
 
+                        <tbody id="tabel-mahasiswa">
                         <?php
                           while($row = mysqli_fetch_assoc($result)) {
                         ?>
-                        <tbody>
-                          
-                          <tr class="baris-mahasiswa" data-nama="<?php echo htmlspecialchars(strtolower($row['Nama_lengkap'])); ?>">
+                          <tr
+                            class="baris-mahasiswa"
+                            data-nama="<?php echo htmlspecialchars(strtolower($row['Nama_lengkap'])); ?>"
+                            data-nilai="<?php echo htmlspecialchars($row['nilai_akhir']); ?>"
+                          >
                             <td>
                               <?php if (!empty($row['foto'])) { ?>
                                 <img src="<?php echo htmlspecialchars($row['foto']); ?>" class="rounded-circle" width="40" height="40" style="object-fit: cover" alt="Foto <?php echo htmlspecialchars($row['Nama_lengkap']); ?>" />
@@ -286,9 +299,8 @@
                               </div>
                             </td>
                           </tr>
-
-                        </tbody>
                         <?php } ?>
+                        </tbody>
                       </table>
                       <p id="search-kosong" class="text-center text-body-secondary py-3 m-0 d-none">
                         Mahasiswa dengan nama tersebut tidak ditemukan
@@ -648,6 +660,36 @@
       });
     </script>
     <!--end::Search Configure-->
+
+    <!--begin::Sort Nilai Akhir Configure-->
+    <script>
+      // data awal dari database sudah urut ascending, klik header untuk membalik urutan
+      let urutanNilai = 'asc';
+
+      // tombol sort hanya ada kalau tabel berisi data
+      document.getElementById('sort-nilai-akhir')?.addEventListener('click', function () {
+        urutanNilai = urutanNilai === 'asc' ? 'desc' : 'asc';
+
+        const tbody = document.getElementById('tabel-mahasiswa');
+        const daftarBaris = Array.from(tbody.querySelectorAll('.baris-mahasiswa'));
+
+        daftarBaris.sort(function (a, b) {
+          const selisih = parseFloat(a.getAttribute('data-nilai')) - parseFloat(b.getAttribute('data-nilai'));
+          return urutanNilai === 'asc' ? selisih : -selisih;
+        });
+        daftarBaris.forEach(function (baris) {
+          tbody.appendChild(baris);
+        });
+
+        document.getElementById('sort-nilai-akhir-icon').className =
+          'bi ms-1 ' + (urutanNilai === 'asc' ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up-alt');
+        document.getElementById('th-nilai-akhir').setAttribute(
+          'aria-sort',
+          urutanNilai === 'asc' ? 'ascending' : 'descending'
+        );
+      });
+    </script>
+    <!--end::Sort Nilai Akhir Configure-->
 
     <!--begin::Foto Preview Configure-->
     <script>
