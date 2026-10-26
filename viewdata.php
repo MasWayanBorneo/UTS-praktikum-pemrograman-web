@@ -318,32 +318,13 @@
                   <!--end::Card Body-->
                   <!--begin::Card Footer-->
                   <div class="card-footer clearfix">
-                    <div class="float-start pt-1 fs-7 text-body-secondary">
-                      Showing 1 to 9 of 42 users
-                    </div>
-                    <ul class="pagination pagination-sm m-0 float-end">
-                      <li class="page-item disabled">
-                        <a class="page-link" href="#" aria-label="Previous"> &laquo; </a>
-                      </li>
-                      <li class="page-item active">
-                        <a class="page-link" href="#">1</a>
-                      </li>
-                      <li class="page-item">
-                        <a class="page-link" href="#">2</a>
-                      </li>
-                      <li class="page-item">
-                        <a class="page-link" href="#">3</a>
-                      </li>
-                      <li class="page-item">
-                        <a class="page-link" href="#">4</a>
-                      </li>
-                      <li class="page-item">
-                        <a class="page-link" href="#">5</a>
-                      </li>
-                      <li class="page-item">
-                        <a class="page-link" href="#" aria-label="Next"> &raquo; </a>
-                      </li>
-                    </ul>
+                    <div id="info-halaman" class="float-start pt-1 fs-7 text-body-secondary"></div>
+                    <!-- tombol halaman diisi oleh script paging -->
+                    <ul
+                      id="pagination-mahasiswa"
+                      class="pagination pagination-sm m-0 float-end flex-wrap"
+                      aria-label="Navigasi halaman"
+                    ></ul>
                   </div>
                   <!--end::Card Footer-->
                 </div>
@@ -641,32 +622,97 @@
     </script>
     <!--end::Edit Modal Configure-->
 
-    <!--begin::Search & Filter Predikat Configure-->
+    <!--begin::Search, Filter Predikat & Paging Configure-->
     <script>
-      // tampilkan hanya baris yang namanya cocok dengan pencarian DAN predikatnya cocok dengan dropdown
-      function filterTabel() {
+      const UKURAN_HALAMAN = 5;
+      let halamanAktif = 1;
+
+      // ambil baris yang namanya cocok dengan pencarian DAN predikatnya cocok dengan dropdown
+      function ambilBarisCocok() {
         const keyword = document.getElementById('user-search').value.trim().toLowerCase();
         const predikat = document.getElementById('user-role-filter').value;
-        let jumlahTampil = 0;
 
-        document.querySelectorAll('.baris-mahasiswa').forEach(function (baris) {
+        return Array.from(document.querySelectorAll('.baris-mahasiswa')).filter(function (baris) {
           const cocokNama = baris.getAttribute('data-nama').includes(keyword);
           const cocokPredikat = predikat === 'all' || baris.getAttribute('data-predikat') === predikat;
-          const cocok = cocokNama && cocokPredikat;
-          baris.classList.toggle('d-none', !cocok);
-          if (cocok) jumlahTampil++;
+          return cocokNama && cocokPredikat;
+        });
+      }
+
+      // buat satu tombol halaman (angka, « atau »)
+      function buatTombolHalaman(label, halaman, nonaktif, aktif, ariaLabel) {
+        const li = document.createElement('li');
+        li.className = 'page-item' + (nonaktif ? ' disabled' : '') + (aktif ? ' active' : '');
+
+        const a = document.createElement('a');
+        a.className = 'page-link';
+        a.href = '#';
+        a.innerHTML = label;
+        a.setAttribute('data-halaman', halaman);
+        if (ariaLabel) a.setAttribute('aria-label', ariaLabel);
+        if (aktif) a.setAttribute('aria-current', 'page');
+
+        li.appendChild(a);
+        return li;
+      }
+
+      // tampilkan hanya 5 baris (yang lolos filter) sesuai halaman aktif
+      function tampilkanHalaman() {
+        const barisCocok = ambilBarisCocok();
+        const totalData = barisCocok.length;
+        const totalHalaman = Math.max(1, Math.ceil(totalData / UKURAN_HALAMAN));
+        halamanAktif = Math.min(Math.max(halamanAktif, 1), totalHalaman);
+
+        const awal = (halamanAktif - 1) * UKURAN_HALAMAN;
+        const akhir = Math.min(awal + UKURAN_HALAMAN, totalData);
+
+        document.querySelectorAll('.baris-mahasiswa').forEach(function (baris) {
+          baris.classList.add('d-none');
+        });
+        barisCocok.slice(awal, akhir).forEach(function (baris) {
+          baris.classList.remove('d-none');
         });
 
         const pesanKosong = document.getElementById('search-kosong');
         if (pesanKosong) {
-          pesanKosong.classList.toggle('d-none', jumlahTampil > 0);
+          pesanKosong.classList.toggle('d-none', totalData > 0);
         }
+
+        document.getElementById('info-halaman').textContent = totalData > 0
+          ? 'Menampilkan ' + (awal + 1) + ' sampai ' + akhir + ' dari ' + totalData + ' data'
+          : 'Menampilkan 0 data';
+
+        const pagination = document.getElementById('pagination-mahasiswa');
+        pagination.innerHTML = '';
+        pagination.appendChild(buatTombolHalaman('&laquo;', halamanAktif - 1, halamanAktif === 1, false, 'Sebelumnya'));
+        for (let i = 1; i <= totalHalaman; i++) {
+          pagination.appendChild(buatTombolHalaman(i, i, false, i === halamanAktif));
+        }
+        pagination.appendChild(buatTombolHalaman('&raquo;', halamanAktif + 1, halamanAktif === totalHalaman, false, 'Berikutnya'));
       }
+
+      // setiap pencarian / filter berubah, kembali ke halaman 1
+      function filterTabel() {
+        halamanAktif = 1;
+        tampilkanHalaman();
+      }
+
+      document.getElementById('pagination-mahasiswa').addEventListener('click', function (event) {
+        const link = event.target.closest('.page-link');
+        if (!link) return;
+        event.preventDefault();
+        if (link.parentElement.classList.contains('disabled')) return;
+
+        halamanAktif = parseInt(link.getAttribute('data-halaman'));
+        tampilkanHalaman();
+      });
 
       document.getElementById('user-search').addEventListener('input', filterTabel);
       document.getElementById('user-role-filter').addEventListener('change', filterTabel);
+
+      tampilkanHalaman();
     </script>
-    <!--end::Search & Filter Predikat Configure-->
+    <!--end::Search, Filter Predikat & Paging Configure-->
 
     <!--begin::Sort Nilai Akhir Configure-->
     <script>
@@ -687,6 +733,8 @@
         daftarBaris.forEach(function (baris) {
           tbody.appendChild(baris);
         });
+        // setelah diurutkan, kembali ke halaman 1
+        filterTabel();
 
         document.getElementById('sort-nilai-akhir-icon').className =
           'bi ms-1 ' + (urutanNilai === 'asc' ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up-alt');
