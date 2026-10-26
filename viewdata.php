@@ -211,9 +211,8 @@
                       <table class="table table-hover align-middle m-0">
                         <thead>
                           <tr>
-                            <th>Foto</th>
-                            <th>NIM</th>
                             <th>Nama Lengkap</th>
+                            <th>NIM</th>
                             <th id="th-nilai-akhir" aria-sort="ascending">
                               <button
                                 type="button"
@@ -244,19 +243,18 @@
                             data-predikat="<?php echo htmlspecialchars(strtolower($row['predikat'])); ?>"
                           >
                             <td>
-                              <?php if (!empty($row['foto'])) { ?>
-                                <img src="<?php echo htmlspecialchars($row['foto']); ?>" class="rounded-circle" width="40" height="40" style="object-fit: cover" alt="Foto <?php echo htmlspecialchars($row['Nama_lengkap']); ?>" />
-                              <?php } else { ?>
-                                <i class="bi bi-person-circle fs-2 text-body-secondary" aria-hidden="true"></i>
-                              <?php } ?>
-                            </td>
-                            <td>
                               <div class="d-flex align-items-center">
-                                <span class="fw-medium"><?php echo $row['Nim']; ?> </span>
+                                <?php if (!empty($row['foto'])) { ?>
+                                  <img src="<?php echo htmlspecialchars($row['foto']); ?>" class="rounded-circle flex-shrink-0 me-2" width="40" height="40" style="object-fit: cover" alt="Foto <?php echo htmlspecialchars($row['Nama_lengkap']); ?>" />
+                                <?php } else { ?>
+                                  <i class="bi bi-person-circle fs-2 text-body-secondary flex-shrink-0 me-2" aria-hidden="true"></i>
+                                <?php } ?>
+                                <span class="fw-medium"><?php echo $row['Nama_lengkap']; ?></span>
                               </div>
                             </td>
                             <td>
-                              <span class="fw-medium"><?php echo $row['Nama_lengkap']; ?></span></td>
+                              <span class="fw-medium"><?php echo $row['Nim']; ?></span>
+                            </td>
                             <td>
                               <span class="fw-medium"> <?php echo $row['nilai_akhir']; ?> </span>
                             </td>
