@@ -227,7 +227,8 @@
                           while($row = mysqli_fetch_assoc($result)) {
                         ?>
                         <tbody>
-                          <tr>
+                          
+                          <tr class="baris-mahasiswa" data-nama="<?php echo htmlspecialchars(strtolower($row['Nama_lengkap'])); ?>">
                             <td>
                               <?php if (!empty($row['foto'])) { ?>
                                 <img src="<?php echo htmlspecialchars($row['foto']); ?>" class="rounded-circle" width="40" height="40" style="object-fit: cover" alt="Foto <?php echo htmlspecialchars($row['Nama_lengkap']); ?>" />
@@ -289,6 +290,9 @@
                         </tbody>
                         <?php } ?>
                       </table>
+                      <p id="search-kosong" class="text-center text-body-secondary py-3 m-0 d-none">
+                        Mahasiswa dengan nama tersebut tidak ditemukan
+                      </p>
                     </div>
                     <!-- /.table-responsive -->
                      <?php
@@ -623,6 +627,27 @@
       });
     </script>
     <!--end::Edit Modal Configure-->
+
+    <!--begin::Search Configure-->
+    <script>
+      // sembunyikan baris yang namanya tidak mengandung kata kunci pencarian
+      document.getElementById('user-search').addEventListener('input', function () {
+        const keyword = this.value.trim().toLowerCase();
+        let jumlahTampil = 0;
+
+        document.querySelectorAll('.baris-mahasiswa').forEach(function (baris) {
+          const cocok = baris.getAttribute('data-nama').includes(keyword);
+          baris.classList.toggle('d-none', !cocok);
+          if (cocok) jumlahTampil++;
+        });
+
+        const pesanKosong = document.getElementById('search-kosong');
+        if (pesanKosong) {
+          pesanKosong.classList.toggle('d-none', jumlahTampil > 0);
+        }
+      });
+    </script>
+    <!--end::Search Configure-->
 
     <!--begin::Foto Preview Configure-->
     <script>
